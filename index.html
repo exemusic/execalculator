@@ -11,36 +11,75 @@
 </head>
 <body>
 
-  <!-- TOP NAV -->
-  <nav class="topnav">
-    <div class="nav-inner">
-      <div class="brand">
-        <span class="brand-icon">⬡</span>
-        <span class="brand-name">ExeRevers</span>
-        <span class="brand-tag">Calculator</span>
+<!-- ══ BANNED OVERLAY ══ -->
+<div class="banned-overlay hidden" id="bannedOverlay">
+  <div class="banned-card">
+    <div class="banned-icon">🚫</div>
+    <div class="banned-title">Akun Diblokir</div>
+    <div class="banned-sub">Akunmu telah dibanned dari ExeRevers Calculator.</div>
+    <div class="banned-reason-box">
+      <div class="banned-reason-label">Alasan</div>
+      <div class="banned-reason-text" id="bannedReason">Pelanggaran kebijakan komunitas.</div>
+    </div>
+    <div class="banned-until" id="bannedUntil"></div>
+    <div class="banned-note">Jika kamu merasa ini kesalahan, hubungi admin melalui komunitas resmi.</div>
+    <button class="btn-ghost small" id="bannedLogoutBtn">Keluar dari Akun</button>
+  </div>
+</div>
+
+<!-- ══ TOP NAV ══ -->
+<nav class="topnav">
+  <div class="nav-inner">
+    <a class="brand" href="#home" id="navBrand">
+      <span class="brand-icon">⬡</span>
+      <span class="brand-name">ExeRevers</span>
+      <span class="brand-tag">Calculator</span>
+    </a>
+    <div class="nav-right">
+      <div id="authArea">
+        <button class="btn-ghost small" id="loginBtn">Masuk</button>
+        <button class="btn-primary small" id="signupBtn">Daftar</button>
       </div>
-      <div class="nav-right">
-        <div id="authArea">
-          <button class="btn-ghost" id="loginBtn">Sign In</button>
-          <button class="btn-primary" id="signupBtn">Create Account</button>
+      <div id="userArea" class="hidden">
+        <div class="nav-user-pill" id="navUserPill">
+          <div class="avatar nav-av" id="userAvatar">?</div>
+          <span class="nav-username" id="navUsername">User</span>
+          <span class="nav-role-badge hidden" id="navRoleBadge"></span>
         </div>
-        <div id="userArea" class="hidden">
-          <div class="avatar" id="userAvatar">?</div>
-          <span class="user-email" id="userEmail"></span>
-          <button class="btn-ghost small" id="logoutBtn">Keluar</button>
-        </div>
+        <button class="btn-ghost small" id="logoutBtn">Keluar</button>
       </div>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <!-- HERO -->
+<!-- ══ ADMIN CONSOLE ══ -->
+<div class="admin-console hidden" id="adminConsole">
+  <div class="console-header">
+    <span class="console-title">⚙ Admin Console — ExeRevers</span>
+    <button class="console-close" id="consoleClose">✕</button>
+  </div>
+  <div class="console-output" id="consoleOutput">
+    <div class="co-line welcome">ExeRevers Admin Console v1.0 — Ketik /help untuk daftar perintah.</div>
+  </div>
+  <div class="console-input-row">
+    <span class="console-prompt">›</span>
+    <input type="text" id="consoleInput" class="console-input" placeholder="/ban [uid] [hari] [alasan] | /unban [uid] | /userinfo [uid] | /help" autocomplete="off" spellcheck="false" />
+    <button class="console-send" id="consoleSend">↵</button>
+  </div>
+</div>
+
+<!-- ══ PAGES ══ -->
+
+<!-- ─── PAGE: HOME ─── -->
+<div id="page-home" class="page active">
+
   <header class="hero">
     <div class="hero-inner">
       <div class="hero-label">Mobile Legends · Account Valuation</div>
       <h1 class="hero-title">Berapa harga<br/><em>akun kamu?</em></h1>
       <p class="hero-sub">Estimasi valuasi akun MLBB berdasarkan sistem Poin Koleksi resmi & standar pasar FJB. Transparan, terperinci, gratis.</p>
       <div class="hero-badges">
-        <span class="badge"><span class="badge-dot green"></span>Sistem Valuasi V2.4</span>
+        <span class="badge"><span class="badge-dot green"></span>Sistem Valuasi V2.5</span>
         <span class="badge"><span class="badge-dot blue"></span>Berbasis Poin Koleksi</span>
         <span class="badge"><span class="badge-dot orange"></span>Gratis Selamanya</span>
       </div>
@@ -60,27 +99,23 @@
     </div>
   </header>
 
-  <!-- GUIDE STRIP -->
   <section class="guide-strip">
     <div class="guide-inner">
       <div class="guide-step"><div class="gs-num">01</div><div class="gs-text"><strong>Isi Data Akun</strong><br/>Rank, winrate, emblem</div></div>
       <div class="guide-arrow">→</div>
       <div class="guide-step"><div class="gs-num">02</div><div class="gs-text"><strong>Input Koleksi Skin</strong><br/>Berdasarkan kasta resmi</div></div>
       <div class="guide-arrow">→</div>
-      <div class="guide-step"><div class="gs-num">03</div><div class="gs-text"><strong>Lihat Estimasi</strong><br/>Harga otomatis dihitung</div></div>
+      <div class="guide-step"><div class="gs-num">03</div><div class="gs-text"><strong>Tekan Hitung</strong><br/>Animasi hasil keren</div></div>
       <div class="guide-arrow">→</div>
       <div class="guide-step"><div class="gs-num">04</div><div class="gs-text"><strong>Beri Feedback</strong><br/>Login untuk kirim saran</div></div>
     </div>
   </section>
 
-  <!-- MAIN FORM + RESULT -->
   <main class="main-content">
     <div class="calculator-grid">
 
-      <!-- LEFT: FORM -->
+      <!-- FORM COL -->
       <div class="form-col">
-
-        <!-- SECTION 1: Basic Info -->
         <div class="card section-card">
           <div class="card-header">
             <div class="card-header-icon rank-icon">🏆</div>
@@ -89,7 +124,6 @@
               <div class="card-subtitle">Rank, winrate, dan emblem kamu</div>
             </div>
           </div>
-
           <div class="field-grid">
             <div class="field">
               <label>Rank Saat Ini</label>
@@ -104,7 +138,6 @@
                 <span class="select-arrow">↓</span>
               </div>
             </div>
-
             <div class="field">
               <label>Rank Tertinggi (Historis)</label>
               <div class="select-wrap">
@@ -118,19 +151,15 @@
               </div>
               <span class="field-note">Riwayat rank sangat mempengaruhi valuasi.</span>
             </div>
-
             <div class="field">
-              <label>Win Rate Rank All Season (%)</label>
+              <label>Win Rate All Season (%)</label>
               <div class="input-wrap">
                 <input type="number" id="winRate" min="0" max="100" step="0.1" placeholder="Contoh: 55.7" />
                 <span class="input-unit">%</span>
               </div>
-              <div class="progress-track">
-                <div class="progress-fill" id="winRateBar" style="width:0%"></div>
-              </div>
+              <div class="progress-track"><div class="progress-fill" id="winRateBar" style="width:0%"></div></div>
               <span class="field-note" id="winRateNote">Isi win rate keseluruhan akun</span>
             </div>
-
             <div class="field">
               <label>Total Match Rank All Season</label>
               <div class="input-wrap">
@@ -138,19 +167,17 @@
                 <span class="input-unit">Match</span>
               </div>
             </div>
-
             <div class="field">
-              <label>Jumlah Emblem Maximal <span class="field-count" id="emblemCount">0/7</span></label>
+              <label>Emblem Maximal <span class="field-count" id="emblemCount">0/7</span></label>
               <div class="input-wrap">
                 <input type="number" id="emblemLevel60" min="0" max="7" placeholder="0" />
                 <span class="input-unit">Emblem</span>
               </div>
-              <span class="field-note">Emblem yang sudah mencapai Level 60</span>
+              <span class="field-note">Emblem yang sudah Level 60</span>
             </div>
           </div>
         </div>
 
-        <!-- SECTION 2: Skin Collection -->
         <div class="card section-card">
           <div class="card-header">
             <div class="card-header-icon skin-icon">💎</div>
@@ -159,35 +186,31 @@
               <div class="card-subtitle">Berdasarkan Sistem Poin Koleksi Resmi MLBB</div>
             </div>
           </div>
-
           <div class="skin-tiers">
-
             <div class="tier-item exclusive">
               <div class="tier-meta">
                 <div class="tier-badge exclusive-badge">UNOBTAINABLE</div>
                 <div class="tier-name">Skin Kolektor Eksklusif</div>
-                <div class="tier-desc">M1, Blue Spectre, Biomedic — tidak akan dirilis ulang</div>
+                <div class="tier-desc">M1, Blue Spectre, Biomedic</div>
               </div>
               <div class="tier-input">
                 <button class="qty-btn" data-target="skinRareLim" data-action="minus">−</button>
-                <input type="number" id="skinRareLim" min="0" placeholder="0" value="0" />
+                <input type="number" id="skinRareLim" min="0" value="0" />
                 <button class="qty-btn" data-target="skinRareLim" data-action="plus">+</button>
               </div>
             </div>
-
             <div class="tier-item legend-lim">
               <div class="tier-meta">
                 <div class="tier-badge legend-lim-badge">SUPREME · 4000 PTS</div>
                 <div class="tier-name">Legend Limited (Event)</div>
-                <div class="tier-desc">Lesley, Guinevere, dll — event eksklusif</div>
+                <div class="tier-desc">Lesley, Guinevere, dll</div>
               </div>
               <div class="tier-input">
                 <button class="qty-btn" data-target="skinLegendLim" data-action="minus">−</button>
-                <input type="number" id="skinLegendLim" min="0" placeholder="0" value="0" />
+                <input type="number" id="skinLegendLim" min="0" value="0" />
                 <button class="qty-btn" data-target="skinLegendLim" data-action="plus">+</button>
               </div>
             </div>
-
             <div class="tier-item legend">
               <div class="tier-meta">
                 <div class="tier-badge legend-badge">SUPREME · 4000 PTS</div>
@@ -196,24 +219,22 @@
               </div>
               <div class="tier-input">
                 <button class="qty-btn" data-target="skinLegend" data-action="minus">−</button>
-                <input type="number" id="skinLegend" min="0" placeholder="0" value="0" />
+                <input type="number" id="skinLegend" min="0" value="0" />
                 <button class="qty-btn" data-target="skinLegend" data-action="plus">+</button>
               </div>
             </div>
-
             <div class="tier-item grand">
               <div class="tier-meta">
                 <div class="tier-badge grand-badge">GRAND · 3000 PTS</div>
                 <div class="tier-name">Collector / KOF / dll</div>
-                <div class="tier-desc">Skin grand collection event</div>
+                <div class="tier-desc">Skin grand collection</div>
               </div>
               <div class="tier-input">
                 <button class="qty-btn" data-target="skinGrand" data-action="minus">−</button>
-                <input type="number" id="skinGrand" min="0" placeholder="0" value="0" />
+                <input type="number" id="skinGrand" min="0" value="0" />
                 <button class="qty-btn" data-target="skinGrand" data-action="plus">+</button>
               </div>
             </div>
-
             <div class="tier-item exquisite">
               <div class="tier-meta">
                 <div class="tier-badge exquisite-badge">EXQUISITE · 2000 PTS</div>
@@ -222,26 +243,23 @@
               </div>
               <div class="tier-input">
                 <button class="qty-btn" data-target="skinExquisite" data-action="minus">−</button>
-                <input type="number" id="skinExquisite" min="0" placeholder="0" value="0" />
+                <input type="number" id="skinExquisite" min="0" value="0" />
                 <button class="qty-btn" data-target="skinExquisite" data-action="plus">+</button>
               </div>
             </div>
-
             <div class="tier-item deluxe">
               <div class="tier-meta">
                 <div class="tier-badge deluxe-badge">DELUXE · 400 PTS</div>
                 <div class="tier-name">Epic Shop / dll</div>
-                <div class="tier-desc">Skin epic yang tersedia di shop</div>
+                <div class="tier-desc">Skin epic di shop</div>
               </div>
               <div class="tier-input">
                 <button class="qty-btn" data-target="skinDeluxe" data-action="minus">−</button>
-                <input type="number" id="skinDeluxe" min="0" placeholder="0" value="0" />
+                <input type="number" id="skinDeluxe" min="0" value="0" />
                 <button class="qty-btn" data-target="skinDeluxe" data-action="plus">+</button>
               </div>
             </div>
-
             <div class="tier-divider"><span>Item Tambahan</span></div>
-
             <div class="tier-item recall">
               <div class="tier-meta">
                 <div class="tier-badge recall-badge">RECALL LIMITED</div>
@@ -250,85 +268,88 @@
               </div>
               <div class="tier-input">
                 <button class="qty-btn" data-target="recallEffect" data-action="minus">−</button>
-                <input type="number" id="recallEffect" min="0" placeholder="0" value="0" />
+                <input type="number" id="recallEffect" min="0" value="0" />
                 <button class="qty-btn" data-target="recallEffect" data-action="plus">+</button>
               </div>
             </div>
-
             <div class="tier-item border">
               <div class="tier-meta">
                 <div class="tier-badge border-badge">BORDER LIMITED</div>
                 <div class="tier-name">Avatar Border Limited</div>
-                <div class="tier-desc">Airplane, komunitas event, dll</div>
+                <div class="tier-desc">Airplane, komunitas, dll</div>
               </div>
               <div class="tier-input">
                 <button class="qty-btn" data-target="borderLimited" data-action="minus">−</button>
-                <input type="number" id="borderLimited" min="0" placeholder="0" value="0" />
+                <input type="number" id="borderLimited" min="0" value="0" />
                 <button class="qty-btn" data-target="borderLimited" data-action="plus">+</button>
               </div>
             </div>
-
           </div>
         </div>
 
-        <!-- BUTTONS -->
         <div class="action-row">
           <button class="btn-calc" id="calculateBtn">Hitung Estimasi</button>
           <button class="btn-reset" id="resetBtn">Reset</button>
         </div>
-
       </div><!-- end form-col -->
 
-      <!-- RIGHT: RESULT -->
+      <!-- RESULT COL -->
       <div class="result-col">
+        <!-- RESULT ANIMATION OVERLAY -->
+        <div class="result-anim-overlay hidden" id="resultAnimOverlay">
+          <div class="anim-inner">
+            <div class="anim-phase" id="animPhase1">
+              <div class="anim-ring"></div>
+              <div class="anim-phase-label">Memproses data akun...</div>
+            </div>
+            <div class="anim-phase hidden" id="animPhase2">
+              <div class="anim-checklist" id="animChecklist"></div>
+            </div>
+            <div class="anim-phase hidden" id="animPhase3">
+              <div class="anim-result-label">Estimasi Harga Akun</div>
+              <div class="anim-result-price" id="animPrice">Rp 0</div>
+              <div class="anim-result-grade" id="animGrade"></div>
+            </div>
+            <button class="anim-skip-btn" id="animSkipBtn">Lewati →</button>
+          </div>
+        </div>
 
-        <div class="card result-card sticky-result">
+        <div class="card result-card sticky-result" id="resultCard">
           <div class="result-header">
             <div class="result-label">Estimasi Harga Akun</div>
             <div class="result-grade" id="resultGrade">—</div>
           </div>
           <div class="result-price" id="resultPrice">Rp 0</div>
           <div class="result-range" id="resultRange"></div>
-
           <div class="breakdown-list" id="priceBreakdown"></div>
-
           <div class="result-meter">
             <div class="meter-label">Skor Keseluruhan</div>
             <div class="meter-track">
               <div class="meter-fill" id="meterFill" style="width:0%"></div>
             </div>
-            <div class="meter-ticks">
-              <span>Biasa</span><span>Bagus</span><span>Premium</span><span>Rare</span>
-            </div>
+            <div class="meter-ticks"><span>Biasa</span><span>Bagus</span><span>Premium</span><span>Rare</span></div>
           </div>
-
-          <div class="disclaimer-box">
-            ⚠ Hasil ini adalah <strong>estimasi kasar</strong> berdasarkan Poin Koleksi & riset pasar FJB. Harga aktual bisa berbeda tergantung kondisi pasar dan negosiasi.
-          </div>
-
+          <div class="disclaimer-box">⚠ Hasil ini adalah <strong>estimasi kasar</strong> berdasarkan Poin Koleksi & riset pasar FJB. Harga aktual bisa berbeda.</div>
           <div class="share-row">
-            <a class="btn-share wa" href="#" id="shareWa">WhatsApp</a>
+            <a class="btn-share wa" href="#" id="shareWa" target="_blank" rel="noopener">WhatsApp</a>
             <button class="btn-share copy" id="copyResult">Salin Hasil</button>
           </div>
         </div>
 
-        <!-- INFO CARD -->
         <div class="card info-card">
           <div class="info-title">Cara Perhitungan</div>
           <div class="info-rows">
-            <div class="info-row"><span class="info-dot exclusive-dot"></span><div><strong>Unobtainable</strong> — Skin sangat langka, nilai pasar premium</div></div>
+            <div class="info-row"><span class="info-dot exclusive-dot"></span><div><strong>Unobtainable</strong> — Skin sangat langka, nilai premium</div></div>
             <div class="info-row"><span class="info-dot legend-lim-dot"></span><div><strong>Supreme 4000 Pts</strong> — Legend Limited & Magic Wheel</div></div>
             <div class="info-row"><span class="info-dot grand-dot"></span><div><strong>Grand 3000 Pts</strong> — Collector, KOF, event grand</div></div>
             <div class="info-row"><span class="info-dot exquisite-dot"></span><div><strong>Exquisite 2000 Pts</strong> — Epic event limited</div></div>
             <div class="info-row"><span class="info-dot deluxe-dot"></span><div><strong>Deluxe 400 Pts</strong> — Epic shop standar</div></div>
             <div class="info-row"><span class="info-dot rank-dot"></span><div><strong>Rank</strong> — Immortal 100★+ mendapat nilai premium</div></div>
-            <div class="info-row"><span class="info-dot bonus-dot"></span><div><strong>Bonus WR</strong> — WR &gt; 70% + 5000 Match = bonus valuasi</div></div>
+            <div class="info-row"><span class="info-dot bonus-dot"></span><div><strong>Bonus WR</strong> — WR &gt;70% + 5000 Match = bonus valuasi</div></div>
           </div>
         </div>
-
-      </div><!-- end result-col -->
-
-    </div><!-- end calculator-grid -->
+      </div>
+    </div>
 
     <!-- FEEDBACK SECTION -->
     <div class="card feedback-card" id="feedbackSection">
@@ -336,24 +357,27 @@
         <div class="feedback-title">💬 Komentar & Masukan</div>
         <div class="feedback-sub">Bantu kami tingkatkan akurasi kalkulator ini</div>
       </div>
-
-      <!-- LOGIN GATE -->
       <div id="feedbackGate" class="feedback-gate">
         <div class="gate-icon">🔐</div>
         <div class="gate-title">Login untuk kirim feedback</div>
-        <div class="gate-sub">Gunakan akun Google atau email kamu</div>
-        <button class="btn-primary" id="gateLoginBtn">Sign In / Daftar</button>
+        <div class="gate-sub">Gunakan akun Google kamu untuk berkontribusi</div>
+        <button class="btn-google gate-google" id="gateLoginBtn">
+          <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Masuk dengan Google
+        </button>
       </div>
-
-      <!-- FEEDBACK FORM (shown when logged in) -->
-      <div id="feedbackForm" class="hidden">
-        <div class="feedback-user-info">
+      <div id="feedbackFormWrap" class="hidden">
+        <div class="feedback-user-row">
           <div class="avatar small" id="formAvatar">?</div>
-          <span id="formUsername">User</span>
+          <div>
+            <div class="feedback-user-name" id="formUsername">User</div>
+            <div class="feedback-user-sub">Feedback dikirim atas nama akunmu</div>
+          </div>
         </div>
         <div class="field">
-          <label>Pesan / Saran Kamu</label>
-          <textarea id="feedbackText" rows="4" placeholder="Tulis masukan kamu di sini... misalnya: 'formulasi skin Grand perlu direvisi' atau 'tambahkan kategori hero fragile'"></textarea>
+          <label>Pesan / Saran <span class="char-counter" id="charCounter">0 / 500</span></label>
+          <textarea id="feedbackText" rows="4" maxlength="500" placeholder="Tulis masukan kamu di sini...&#10;&#10;⚠ Dilarang: link/URL, nomor HP, konten promosi, phishing, SARA, atau spam. Akun dapat dibanned."></textarea>
+          <div class="char-bar-track"><div class="char-bar-fill" id="charBarFill" style="width:0%"></div></div>
         </div>
         <div class="rating-row">
           <span>Rating Akurasi:</span>
@@ -362,11 +386,12 @@
           </div>
           <span id="ratingLabel" class="rating-label"></span>
         </div>
+        <div class="feedback-rules">
+          <strong>⚠ Aturan Feedback:</strong> Maks 500 karakter · Dilarang posting link/URL · Dilarang spam (1x per 24 jam) · Dilarang konten berbahaya. Pelanggaran = ban akun.
+        </div>
         <button class="btn-primary" id="submitFeedback">Kirim Feedback</button>
         <div id="feedbackMsg" class="feedback-msg hidden"></div>
       </div>
-
-      <!-- COMMENTS LIST -->
       <div class="comments-section">
         <div class="comments-title">Komentar Terbaru</div>
         <div id="commentsList" class="comments-list">
@@ -374,80 +399,86 @@
         </div>
       </div>
     </div>
-
   </main>
 
-  <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-inner">
-      <div class="footer-brand">
-        <span class="brand-icon">⬡</span> ExeRevers Calculator
-        <span class="footer-version">v2.4.0</span>
-      </div>
+      <div class="footer-brand"><span class="brand-icon">⬡</span> ExeRevers Calculator <span class="footer-version">v2.5.0</span></div>
       <div class="footer-links">
-        <a href="#">Tentang</a>
-        <a href="#">Disclaimer</a>
-        <a href="#">Privasi</a>
-        <a href="#">Kontak</a>
+        <a href="#">Tentang</a><a href="#">Disclaimer</a><a href="#">Privasi</a><a href="#">Kontak</a>
       </div>
       <div class="footer-copy">© 2026 ExeRevers. Estimasi bukan jaminan harga.</div>
     </div>
   </footer>
+</div><!-- end page-home -->
 
-  <!-- AUTH MODAL -->
-  <div class="modal-overlay hidden" id="authModal">
-    <div class="modal">
-      <button class="modal-close" id="modalClose">✕</button>
-      <div class="modal-brand"><span class="brand-icon">⬡</span> ExeRevers</div>
-
-      <div class="modal-tabs">
-        <button class="modal-tab active" id="tabLogin">Masuk</button>
-        <button class="modal-tab" id="tabSignup">Daftar</button>
+<!-- ─── PAGE: LOGIN ─── -->
+<div id="page-login" class="page hidden">
+  <div class="auth-page">
+    <div class="auth-box">
+      <div class="auth-brand">
+        <span class="brand-icon large">⬡</span>
+        <div><span class="brand-name large">ExeRevers</span><br/><span class="brand-tag">Calculator</span></div>
       </div>
-
-      <div id="loginPanel">
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="loginEmail" placeholder="kamu@email.com" />
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" id="loginPass" placeholder="••••••••" />
-        </div>
-        <button class="btn-primary full" id="doLogin">Masuk</button>
-        <div class="or-divider"><span>atau</span></div>
-        <button class="btn-google full" id="googleLoginBtn">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-          Lanjutkan dengan Google
-        </button>
-        <div class="auth-error hidden" id="loginError"></div>
-      </div>
-
-      <div id="signupPanel" class="hidden">
-        <div class="field">
-          <label>Nama / Username</label>
-          <input type="text" id="signupName" placeholder="Nama kamu" />
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="signupEmail" placeholder="kamu@email.com" />
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" id="signupPass" placeholder="Min. 6 karakter" />
-        </div>
-        <button class="btn-primary full" id="doSignup">Buat Akun</button>
-        <div class="or-divider"><span>atau</span></div>
-        <button class="btn-google full" id="googleSignupBtn">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-          Lanjutkan dengan Google
-        </button>
-        <div class="auth-error hidden" id="signupError"></div>
-      </div>
+      <h2 class="auth-title">Selamat Datang</h2>
+      <p class="auth-sub">Masuk atau daftar untuk mengakses semua fitur.</p>
+      <button class="btn-google full" id="googleLoginBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        Lanjutkan dengan Google
+      </button>
+      <div class="auth-error hidden" id="loginError"></div>
+      <div class="auth-policy">Dengan masuk, kamu menyetujui <a href="#">Ketentuan Layanan</a> kami.</div>
+      <button class="auth-back-btn" id="loginBackBtn">← Kembali ke Kalkulator</button>
     </div>
   </div>
+</div>
 
-  <!-- Firebase SDKs -->
-  <script type="module" src="app.js"></script>
+<!-- ─── PAGE: REGISTER (set username) ─── -->
+<div id="page-register" class="page hidden">
+  <div class="auth-page">
+    <div class="auth-box">
+      <div class="auth-brand">
+        <span class="brand-icon large">⬡</span>
+        <div><span class="brand-name large">ExeRevers</span><br/><span class="brand-tag">Calculator</span></div>
+      </div>
+      <h2 class="auth-title">Buat Username</h2>
+      <p class="auth-sub">Pilih username unik. Ini yang akan tampil di komentar publik.</p>
+      <div class="reg-google-pill" id="regGooglePill">
+        <div class="avatar small" id="regGoogleAvatar">?</div>
+        <span id="regGoogleEmail">user@gmail.com</span>
+      </div>
+      <div class="field">
+        <label>Username <span class="char-counter" id="regCharCount">0/20</span></label>
+        <div class="input-wrap">
+          <input type="text" id="regUsername" maxlength="20" placeholder="contoh: nolan_exe" autocomplete="off" />
+          <span class="input-unit" id="regUsernameStatus"></span>
+        </div>
+        <span class="field-note" id="regNote">3–20 karakter · Hanya huruf, angka, underscore</span>
+      </div>
+      <button class="btn-primary full" id="doRegister">Selesai & Mulai →</button>
+      <div class="auth-error hidden" id="registerError"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE: WELCOME ─── -->
+<div id="page-welcome" class="page hidden">
+  <div class="welcome-page">
+    <div class="welcome-box">
+      <div class="welcome-logo">⬡</div>
+      <div class="welcome-greeting" id="welcomeGreeting"></div>
+      <div class="welcome-sub hidden" id="welcomeSub">Akun kamu sudah siap. Ini panduan singkatnya:</div>
+      <div class="welcome-steps hidden" id="welcomeSteps">
+        <div class="ws-item" id="ws1"><span class="ws-num">01</span><span>Isi data akun MLBB kamu</span></div>
+        <div class="ws-item" id="ws2"><span class="ws-num">02</span><span>Masukkan koleksi skin kamu</span></div>
+        <div class="ws-item" id="ws3"><span class="ws-num">03</span><span>Tekan "Hitung Estimasi"</span></div>
+        <div class="ws-item" id="ws4"><span class="ws-num">04</span><span>Lihat & bagikan hasilmu!</span></div>
+      </div>
+      <button class="btn-primary welcome-btn hidden" id="welcomeStartBtn">Mulai Sekarang →</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
 </body>
 </html>
