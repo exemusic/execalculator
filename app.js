@@ -797,7 +797,25 @@ async function renderComments(listEl, limit = null) {
     });
   }
 
-  const items = Array.from(itemMap.values());
+  let items = Array.from(itemMap.values());
+  try {
+    const response = await fetch(new URL('data.json', window.location.href).href);
+    if (response.ok) {
+      const json = await response.json();
+      const localFeedback = json?.data?.feedback || json?.feedback || null;
+      if (localFeedback && typeof localFeedback === 'object') {
+        Object.entries(localFeedback).forEach(([key, value]) => {
+          if (!itemMap.has(key) && value && typeof value === 'object') {
+            itemMap.set(key, { _key: key, ...value });
+          }
+        });
+        items = Array.from(itemMap.values());
+      }
+    }
+  } catch (_) {
+    // ignore local file read errors
+  }
+
   if (!items.length) {
     listEl.innerHTML = '<div class="loading-indicator">Belum ada komentar.</div>';
     return;
