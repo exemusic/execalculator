@@ -44,11 +44,33 @@
           <span class="nav-username" id="navUsername">User</span>
           <span class="nav-role-badge hidden" id="navRoleBadge"></span>
         </div>
-        <button class="btn-ghost small" id="logoutBtn">Keluar</button>
       </div>
     </div>
   </div>
 </nav>
+
+<div class="account-popup-backdrop hidden" id="accountPopupBackdrop"></div>
+<div class="account-popup hidden" id="accountPopup">
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="popup-title">Akun</div>
+      <button class="popup-close" id="accountPopupClose">✕</button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-user">
+        <div class="avatar popup-avatar" id="popupAvatar">?</div>
+        <div>
+          <div class="popup-username" id="popupUsername">User</div>
+          <div class="popup-subtitle">Kelola sesi kamu</div>
+        </div>
+      </div>
+      <div class="popup-actions">
+        <button class="btn-ghost small" id="popupCancelBtn">Batal</button>
+        <button class="btn-primary small" id="popupLogoutBtn">Keluar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="admin-console hidden" id="adminConsole">
   <div class="console-header">

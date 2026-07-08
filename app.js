@@ -131,9 +131,12 @@ async function handleUserLogin(user) {
  
   $('authArea').classList.add('hidden');
   $('userArea').classList.remove('hidden');
-  $('navUsername').textContent = userData.username || user.displayName || 'User';
+  const usernameText = userData.username || user.displayName || 'User';
+  $('navUsername').textContent = usernameText;
+  $('popupUsername').textContent = usernameText;
   const initial = (userData.username || user.email || '?')[0].toUpperCase();
   $('userAvatar').textContent = initial;
+  $('popupAvatar').textContent = initial;
 
  
   if (userData.owner) {
@@ -190,11 +193,27 @@ async function doGoogleLogin() {
 
 $('loginBtn').addEventListener('click', () => showPage('login'));
 $('signupBtn').addEventListener('click', () => showPage('login'));
-$('logoutBtn').addEventListener('click', () => signOut(auth));
+$('navUserPill').addEventListener('click', () => {
+  $('accountPopup').classList.toggle('visible');
+  $('accountPopupBackdrop').classList.toggle('visible');
+});
+$('accountPopupClose').addEventListener('click', closeAccountPopup);
+$('popupCancelBtn').addEventListener('click', closeAccountPopup);
+$('popupLogoutBtn').addEventListener('click', () => {
+  closeAccountPopup();
+  signOut(auth);
+});
+$('accountPopupBackdrop').addEventListener('click', closeAccountPopup);
+window.addEventListener('keydown', e => { if (e.key === 'Escape') closeAccountPopup(); });
 $('loginBackBtn').addEventListener('click', () => showPage('home'));
 $('googleLoginBtn').addEventListener('click', doGoogleLogin);
 $('gateLoginBtn').addEventListener('click', doGoogleLogin);
 $('navBrand').addEventListener('click', e => { e.preventDefault(); showPage('home'); });
+
+function closeAccountPopup() {
+  $('accountPopup').classList.remove('visible');
+  $('accountPopupBackdrop').classList.remove('visible');
+}
 
 function getAuthError(code) {
   const map = {
