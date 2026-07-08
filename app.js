@@ -774,8 +774,7 @@ function showFeedbackMsg(msg, type) {
 }
 
 async function renderComments(listEl, limit = null) {
-  const q = limit ? query(ref(db, 'data/feedback'), orderByChild('Time'), limitToLast(limit)) : query(ref(db, 'data/feedback'), orderByChild('Time'));
-  const snapshot = await get(q);
+  const snapshot = await get(ref(db, 'data/feedback'));
   listEl.innerHTML = '';
   if (!snapshot.exists()) {
     listEl.innerHTML = '<div class="loading-indicator">Belum ada komentar.</div>';
@@ -783,6 +782,11 @@ async function renderComments(listEl, limit = null) {
   }
   const items = [];
   snapshot.forEach(child => items.push({ _key: child.key, ...child.val() }));
+  items.sort((a, b) => (Number(a.Time) || 0) - (Number(b.Time) || 0));
+  if (limit !== null) {
+    const sliceStart = Math.max(items.length - limit, 0);
+    items.splice(0, sliceStart);
+  }
   items.reverse();
 
   for (const item of items) {
