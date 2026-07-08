@@ -3,7 +3,7 @@ import { initializeApp }               from "https://www.gstatic.com/firebasejs/
 import { getAuth, onAuthStateChanged, signInWithPopup,
          GoogleAuthProvider, signOut, updateProfile }
                                         from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
-import { getDatabase, ref, get, set, push, update,
+import { getDatabase, ref, get, set, push, update, remove,
          onValue, query, orderByChild, limitToLast, serverTimestamp }
                                         from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
 
@@ -26,7 +26,7 @@ const googleProvider= new GoogleAuthProvider();
 const $  = id => document.getElementById(id);
 const qs = s  => document.querySelector(s);
 
-const PAGES = ['home','login','register','welcome'];
+const PAGES = ['home','login','register','welcome','allfeedback'];
 function showPage(id) {
   PAGES.forEach(p => {
     const el = $(`page-${p}`);
@@ -55,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupFeedback();
   setupAdminConsole();
   loadComments();
+  loadAllComments();
+  setupAnnouncement();
 });
 
 let currentUser     = null;
@@ -767,58 +769,182 @@ function showFeedbackMsg(msg, type) {
   setTimeout(() => el.classList.add('hidden'), 5000);
 }
 
-function loadComments() {
-  const q = query(ref(db, 'data/feedback'), orderByChild('Time'), limitToLast(25));
-  onValue(q, async snapshot => {
-    const list = $('commentsList');
-    list.innerHTML = '';
-    if (!snapshot.exists()) {
-      list.innerHTML = '<div class="loading-indicator">Belum ada komentar. Jadilah yang pertama!</div>';
-      return;
+async function renderComments(listEl, limit = null) {
+  const q = limit ? query(ref(db, 'data/feedback'), orderByChild('Time'), limitToLast(limit)) : query(ref(db, 'data/feedback'), orderByChild('Time'));
+  const snapshot = await get(q);
+  listEl.innerHTML = '';
+  if (!snapshot.exists()) {
+    listEl.innerHTML = '<div class="loading-indicator">Belum ada komentar.</div>';
+    return;
+  }
+  const items = [];
+  snapshot.forEach(child => items.push({ _key: child.key, ...child.val() }));
+  items.reverse();
+
+  for (const item of items) {
+    let isBanned = false;
+    if (item.uid) {
+      try {
+        const banSnap = await get(ref(db, `users/${item.uid}/banned`));
+        isBanned = banSnap.val() === true;
+      } catch (_) {}
     }
-    const items = [];
-    snapshot.forEach(child => items.push({ _key: child.key, ...child.val() }));
-    items.reverse();
 
-    for (const item of items) {
-     
-      let isBanned = false;
-      if (item.uid) {
-        try {
-          const banSnap = await get(ref(db, `users/${item.uid}/banned`));
-          isBanned = banSnap.val() === true;
-        } catch(_) {}
-      }
+    const el = document.createElement('div');
+    el.className = 'comment-item' + (isBanned ? ' banned-comment' : '');
+    const date = timeAgo(item.Time);
+    const initial = (item.By || '?')[0].toUpperCase();
+    const starsStr = item.rating ? '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) : '';
 
-      const el = document.createElement('div');
-      el.className = 'comment-item' + (isBanned ? ' banned-comment' : '');
-      const date    = timeAgo(item.Time);
-      const initial = (item.By || '?')[0].toUpperCase();
-      const starsStr= item.rating ? '★'.repeat(item.rating)+'☆'.repeat(5-item.rating) : '';
-
-      el.innerHTML = `
-        <div class="comment-header">
-          <div class="comment-user">
-            <div class="avatar small" style="background:var(--surface-3)">${initial}</div>
-            <div>
-              <div class="comment-name">${escHtml(item.By || 'Anonim')}</div>
-              <div class="comment-time">${date}</div>
-            </div>
-          </div>
-          <div class="comment-meta">
-            ${starsStr ? `<div class="comment-stars">${starsStr}</div>` : ''}
-            ${isBanned ? `<span class="comment-banned-tag">BANNED</span>` : ''}
+    el.innerHTML = `
+      <div class="comment-header">
+        <div class="comment-user">
+          <div class="avatar small" style="background:var(--surface-3)">${initial}</div>
+          <div>
+            <div class="comment-name">${escHtml(item.By || 'Anonim')}</div>
+            <div class="comment-time">${date}</div>
           </div>
         </div>
-        <div class="comment-text">${escHtml(item.Text || '')}</div>
-      `;
-      list.appendChild(el);
+        <div class="comment-meta">
+          ${starsStr ? `<div class="comment-stars">${starsStr}</div>` : ''}
+          ${isBanned ? `<span class="comment-banned-tag">BANNED</span>` : ''}
+        </div>
+      </div>
+      <div class="comment-text">${escHtml(item.Text || '')}</div>
+    `;
+
+    if (item.adminReply) {
+      const replyEl = document.createElement('div');
+      replyEl.className = 'comment-reply';
+      replyEl.innerHTML = `<strong>Balasan Admin:</strong> ${escHtml(item.adminReply)}`;
+      el.appendChild(replyEl);
     }
-  });
+
+    if (currentUserData?.owner || currentUserData?.staff) {
+      const adminActions = document.createElement('div');
+      adminActions.className = 'comment-admin-actions';
+      adminActions.innerHTML = `
+        <button class="btn-ghost tiny" data-action="delete" data-comment="${item._key}">Hapus</button>
+        <button class="btn-ghost tiny" data-action="reply" data-comment="${item._key}">Balas</button>
+      `;
+      adminActions.querySelector('[data-action="delete"]').addEventListener('click', async () => {
+        if (!confirm('Hapus komentar ini?')) return;
+        await remove(ref(db, `data/feedback/${item._key}`));
+        await renderComments(listEl, limit);
+      });
+      adminActions.querySelector('[data-action="reply"]').addEventListener('click', async () => {
+        const reply = prompt('Masukkan balasan admin untuk komentar ini:');
+        if (!reply) return;
+        await update(ref(db, `data/feedback/${item._key}`), {
+          adminReply: reply,
+          adminReplyAt: Date.now(),
+          adminReplyBy: currentUser.uid
+        });
+        await renderComments(listEl, limit);
+      });
+      el.appendChild(adminActions);
+    }
+
+    listEl.appendChild(el);
+  }
 }
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function renderComments(listEl, limit = null) {
+  const q = limit ? query(ref(db, 'data/feedback'), orderByChild('Time'), limitToLast(limit)) : query(ref(db, 'data/feedback'), orderByChild('Time'));
+  const snapshot = await get(q);
+  listEl.innerHTML = '';
+  if (!snapshot.exists()) {
+    listEl.innerHTML = '<div class="loading-indicator">Belum ada komentar.</div>';
+    return;
+  }
+  const items = [];
+  snapshot.forEach(child => items.push({ _key: child.key, ...child.val() }));
+  items.reverse();
+  for (const item of items) {
+    let isBanned = false;
+    if (item.uid) {
+      try {
+        const banSnap = await get(ref(db, `users/${item.uid}/banned`));
+        isBanned = banSnap.val() === true;
+      } catch (_) {}
+    }
+    const el = document.createElement('div');
+    el.className = 'comment-item' + (isBanned ? ' banned-comment' : '');
+    const date = timeAgo(item.Time);
+    const initial = (item.By || '?')[0].toUpperCase();
+    const starsStr = item.rating ? '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) : '';
+    el.innerHTML = `
+      <div class="comment-header">
+        <div class="comment-user">
+          <div class="avatar small" style="background:var(--surface-3)">${initial}</div>
+          <div>
+            <div class="comment-name">${escHtml(item.By || 'Anonim')}</div>
+            <div class="comment-time">${date}</div>
+          </div>
+        </div>
+        <div class="comment-meta">
+          ${starsStr ? `<div class="comment-stars">${starsStr}</div>` : ''}
+          ${isBanned ? `<span class="comment-banned-tag">BANNED</span>` : ''}
+        </div>
+      </div>
+      <div class="comment-text">${escHtml(item.Text || '')}</div>
+    `;
+    if (currentUserData?.owner || currentUserData?.staff) {
+      const adminActions = document.createElement('div');
+      adminActions.className = 'comment-admin-actions';
+      adminActions.innerHTML = `
+        <button class="btn-ghost tiny" data-action="delete" data-comment="${item._key}">Hapus</button>
+      `;
+      adminActions.querySelector('[data-action="delete"]').addEventListener('click', async () => {
+        if (!confirm('Hapus komentar ini?')) return;
+        await remove(ref(db, `data/feedback/${item._key}`));
+        await renderComments(listEl, limit);
+      });
+      el.appendChild(adminActions);
+    }
+    listEl.appendChild(el);
+  }
+}
+
+function setupAnnouncement() {
+  const banner = $('announcementBanner');
+  const textEl = $('announcementText');
+  const closeBtn = $('announceCloseBtn');
+  closeBtn.addEventListener('click', () => banner.classList.add('hidden'));
+  onValue(ref(db, 'data/announcement'), snap => {
+    const msg = snap.val();
+    if (!msg) {
+      banner.classList.add('hidden');
+      return;
+    }
+    textEl.textContent = msg;
+    banner.classList.remove('hidden');
+  });
+}
+
+async function loadAllComments() {
+  const listEl = $('allCommentsList');
+  if (!listEl) return;
+  await renderComments(listEl, null);
+  const viewBtn = $('viewAllCommentsBtn');
+  const backBtn = $('backToHomeBtn');
+  if (viewBtn) viewBtn.addEventListener('click', () => showPage('allfeedback'));
+  if (backBtn) backBtn.addEventListener('click', () => showPage('home'));
+}
+
+async function loadComments() {
+  const list = $('commentsList');
+  if (!list) return;
+  await renderComments(list, 6);
+}
+
+function updateFeedbackList() {
+  const listEl = $('commentsList');
+  if (listEl) renderComments(listEl, 6);
 }
 
 function setupAdminConsole() {
@@ -840,6 +966,9 @@ function setupAdminConsole() {
         addLine('/ban [uid] [hari] [alasan]  —  Ban akun user','info');
         addLine('/unban [uid]  —  Hapus ban user','info');
         addLine('/userinfo [uid]  —  Lihat data user','info');
+        addLine('/find [username|uid]  —  Cari user berdasarkan username atau UID','info');
+        addLine('/announce [pesan]  —  Kirim announcement publik','info');
+        addLine('/hapusannounce  —  Hapus announcement','info');
         addLine('/clear  —  Bersihkan console','info');
         break;
       case '/ban':
@@ -850,6 +979,15 @@ function setupAdminConsole() {
         break;
       case '/userinfo':
         cmdUserInfo(parts);
+        break;
+      case '/find':
+        cmdFind(parts);
+        break;
+      case '/announce':
+        cmdAnnounce(parts);
+        break;
+      case '/hapusannounce':
+        cmdRemoveAnnouncement();
         break;
       case '/clear':
         output.innerHTML = '';
@@ -925,6 +1063,56 @@ function setupAdminConsole() {
   async function cmdUserInfo(parts) {
     if (parts.length < 2) { addLine('Format: /userinfo [uid]','error'); return; }
     const targetUid = parts[1];
+    await showUserInfoByUid(targetUid, addLine);
+  }
+
+  async function cmdFind(parts) {
+    if (parts.length < 2) { addLine('Format: /find [username|uid]','error'); return; }
+    const queryText = parts.slice(1).join(' ').trim();
+    if (!queryText) { addLine('Masukkan username atau UID untuk dicari.','error'); return; }
+    if (queryText.length === 28 && queryText.startsWith('uid')) {
+      await showUserInfoByUid(queryText, addLine);
+      return;
+    }
+    const usernameKey = queryText.toLowerCase();
+    const mappingSnap = await get(ref(db, `usernames/${usernameKey}`));
+    if (!mappingSnap.exists()) {
+      addLine(`User tidak ditemukan: ${queryText}`,'error');
+      return;
+    }
+    const targetUid = mappingSnap.val();
+    await showUserInfoByUid(targetUid, addLine);
+  }
+
+  async function cmdAnnounce(parts) {
+    if (!currentUser) return;
+    const callerSnap = await get(ref(db, `users/${currentUser.uid}`));
+    const caller = callerSnap.val();
+    if (!caller?.owner && !caller?.staff) { addLine('Akses ditolak.','error'); return; }
+    const message = parts.slice(1).join(' ').trim();
+    if (!message) { addLine('Format: /announce [pesan]','error'); return; }
+    try {
+      await set(ref(db, 'data/announcement'), message);
+      addLine('✓ Announcement dikirim.','success');
+    } catch (err) {
+      addLine('Gagal kirim announcement: ' + err.message,'error');
+    }
+  }
+
+  async function cmdRemoveAnnouncement() {
+    if (!currentUser) return;
+    const callerSnap = await get(ref(db, `users/${currentUser.uid}`));
+    const caller = callerSnap.val();
+    if (!caller?.owner && !caller?.staff) { addLine('Akses ditolak.','error'); return; }
+    try {
+      await remove(ref(db, 'data/announcement'));
+      addLine('✓ Announcement dihapus.','success');
+    } catch (err) {
+      addLine('Gagal hapus announcement: ' + err.message,'error');
+    }
+  }
+
+  async function showUserInfoByUid(targetUid, addLine) {
     try {
       const snap = await get(ref(db, `users/${targetUid}`));
       if (!snap.exists()) { addLine('User tidak ditemukan.','error'); return; }
@@ -940,6 +1128,7 @@ function setupAdminConsole() {
       addLine(`Owner    : ${u.owner ? 'Ya' : 'Tidak'}`, 'info');
       addLine(`Staff    : ${u.staff ? 'Ya' : 'Tidak'}`, 'info');
       addLine(`Daftar   : ${u.createdAt ? new Date(u.createdAt).toLocaleDateString('id-ID') : '-'}`, 'info');
+      addLine(`UID      : ${targetUid}`, 'info');
     } catch(err) {
       addLine('Gagal fetch: ' + err.message,'error');
     }

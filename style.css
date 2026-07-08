@@ -231,22 +231,29 @@ a { color: inherit; text-decoration: none; }
 }
 .account-popup-backdrop {
   position: fixed; inset: 0; z-index: 300;
+  display: none;
   background: rgba(0,0,0,0.20);
   backdrop-filter: blur(3px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
 }
-.account-popup-backdrop.visible { opacity: 1; pointer-events: auto; }
+.account-popup-backdrop.visible {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
 .account-popup {
   position: fixed; top: 72px; right: 18px; z-index: 310;
   width: min(320px, calc(100% - 28px));
+  display: none;
   opacity: 0;
   transform: translateY(-12px) scale(0.98);
   pointer-events: none;
   transition: opacity 0.28s ease, transform 0.28s ease;
 }
 .account-popup.visible {
+  display: block;
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
@@ -781,10 +788,44 @@ textarea::placeholder { color: var(--text-3); }
 .feedback-msg.error   { background: var(--error-bg);   color: var(--error);   border: 1px solid var(--error-bdr); }
 .feedback-msg.warn    { background: var(--warn-bg);    color: var(--warn);    border: 1px solid var(--warn-bdr); }
 
+.announcement-banner {
+  max-width: 1160px; margin: 0 auto; padding: 0 24px 16px;
+}
+.announcement-card {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 14px 18px; background: rgba(57,80,160,0.16);
+  border: 1px solid rgba(141,168,255,0.15); border-radius: var(--radius-lg);
+  color: var(--text-1);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.14);
+}
+.announcement-text {
+  font-size: 14px; color: var(--text-1); line-height: 1.5;
+}
+.announce-close {
+  background: transparent; border: none; color: var(--text-2);
+  font-size: 16px; cursor: pointer; padding: 6px;
+  transition: color var(--dur), transform var(--dur);
+}
+.announce-close:hover { color: var(--text-1); transform: scale(1.05); }
 
 .comments-section { margin-top: 36px; }
-.comments-title { font-weight: 700; font-size: 14px; color: var(--text-1); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+.comments-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 16px;
+}
+.comments-title { font-weight: 700; font-size: 14px; color: var(--text-1); text-transform: uppercase; letter-spacing: 0.5px; }
 .comments-list { display: flex; flex-direction: column; gap: 12px; }
+.comment-admin-actions {
+  display: flex; gap: 10px; margin-top: 12px;
+}
+.btn-ghost.tiny {
+  padding: 6px 10px; font-size: 12px;
+}
+.comment-reply {
+  margin-top: 14px; padding: 12px; background: rgba(109,114,246,0.08);
+  border: 1px solid rgba(109,114,246,0.16); border-radius: var(--radius-sm);
+  color: var(--text-2); font-size: 13px; line-height: 1.5;
+}
 
 .comment-item {
   padding: 16px; background: var(--bg-alt);

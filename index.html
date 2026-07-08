@@ -49,8 +49,8 @@
   </div>
 </nav>
 
-<div class="account-popup-backdrop hidden" id="accountPopupBackdrop"></div>
-<div class="account-popup hidden" id="accountPopup">
+<div class="account-popup-backdrop" id="accountPopupBackdrop"></div>
+<div class="account-popup" id="accountPopup">
   <div class="popup-card">
     <div class="popup-header">
       <div class="popup-title">Akun</div>
@@ -114,6 +114,13 @@
       </div>
     </div>
   </header>
+
+  <section class="announcement-banner hidden" id="announcementBanner">
+    <div class="announcement-card">
+      <div class="announcement-text" id="announcementText"></div>
+      <button class="announce-close" id="announceCloseBtn">✕</button>
+    </div>
+  </section>
 
   <section class="guide-strip reveal-on-scroll delay-1">
     <div class="guide-inner">
@@ -409,13 +416,40 @@
         <div id="feedbackMsg" class="feedback-msg hidden"></div>
       </div>
       <div class="comments-section">
-        <div class="comments-title">Komentar Terbaru</div>
+        <div class="comments-title-row">
+          <div class="comments-title">Komentar Terbaru</div>
+          <button class="btn-ghost small" id="viewAllCommentsBtn">Lihat semua komentar</button>
+        </div>
         <div id="commentsList" class="comments-list">
           <div class="loading-indicator">Memuat komentar...</div>
         </div>
       </div>
     </div>
   </main>
+</div>
+
+<div id="page-allfeedback" class="page hidden">
+  <main class="main-content">
+    <div class="card section-card reveal-on-scroll delay-1">
+      <div class="card-header">
+        <div class="card-header-icon skin-icon">📝</div>
+        <div>
+          <div class="card-title">Semua Komentar</div>
+          <div class="card-subtitle">Lihat komentar publik terbaru dari semua pengguna.</div>
+        </div>
+      </div>
+      <div class="comments-section">
+        <div class="comments-title-row">
+          <div class="comments-title">Semua Komentar</div>
+          <button class="btn-ghost small" id="backToHomeBtn">← Kembali</button>
+        </div>
+        <div id="allCommentsList" class="comments-list">
+          <div class="loading-indicator">Memuat semua komentar...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
 
   <footer class="site-footer">
     <div class="footer-inner">
