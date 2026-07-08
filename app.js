@@ -774,14 +774,35 @@ function showFeedbackMsg(msg, type) {
 }
 
 async function renderComments(listEl, limit = null) {
-  const snapshot = await get(ref(db, 'data/feedback'));
+  const pathsToTry = [
+    { path: 'data/feedback', childFn: snap => snap },
+    { path: 'feedback', childFn: snap => snap },
+    { path: 'data', childFn: snap => snap.child('feedback') }
+  ];
+
   listEl.innerHTML = '';
-  if (!snapshot.exists()) {
+  const itemMap = new Map();
+
+  for (const source of pathsToTry) {
+    const snapshot = await get(ref(db, source.path));
+    if (!snapshot.exists()) continue;
+    const feedbackSnap = source.childFn(snapshot);
+    if (!feedbackSnap.exists()) continue;
+    feedbackSnap.forEach(child => {
+      const key = child.key;
+      if (!key) return;
+      if (!itemMap.has(key)) {
+        itemMap.set(key, { _key: key, ...child.val() });
+      }
+    });
+  }
+
+  const items = Array.from(itemMap.values());
+  if (!items.length) {
     listEl.innerHTML = '<div class="loading-indicator">Belum ada komentar.</div>';
     return;
   }
-  const items = [];
-  snapshot.forEach(child => items.push({ _key: child.key, ...child.val() }));
+
   items.sort((a, b) => (Number(a.Time) || 0) - (Number(b.Time) || 0));
   if (limit !== null) {
     const sliceStart = Math.max(items.length - limit, 0);
