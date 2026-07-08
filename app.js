@@ -1,6 +1,4 @@
-// =============================================
-// EXEREVERS CALCULATOR v2.5 — app.js
-// =============================================
+
 import { initializeApp }               from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithPopup,
          GoogleAuthProvider, signOut, updateProfile }
@@ -9,16 +7,15 @@ import { getDatabase, ref, get, set, push, update,
          onValue, query, orderByChild, limitToLast, serverTimestamp }
                                         from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
 
-// ── FIREBASE ──
 const firebaseConfig = {
-  apiKey:            "AIzaSyBmQTAmey1i6L0YYP2eoRYHFds3D2OnimI",
-  authDomain:        "exereversdb.firebaseapp.com",
-  databaseURL:       "https://exereversdb-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "exereversdb",
-  storageBucket:     "exereversdb.firebasestorage.app",
-  messagingSenderId: "864680081163",
-  appId:             "1:864680081163:web:1e1d743e607d0852df940e",
-  measurementId:     "G-YTW0JFGG7X"
+  apiKey:            "AIzaSyAH6XpWZdI3civ3V4zzVzJeh7MWnx-S8PA",
+  authDomain:        "exeinthedata.firebaseapp.com",
+  databaseURL:       "https://exeinthedata-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId:         "exeinthedata",
+  storageBucket:     "exeinthedata.firebasestorage.app",
+  messagingSenderId: "458648274992",
+  appId:             "1:458648274992:web:606fc651121e33dbcd45f5",
+  measurementId:     "G-ZV9QMEG05M"
 };
 
 const app           = initializeApp(firebaseConfig);
@@ -26,11 +23,9 @@ const auth          = getAuth(app);
 const db            = getDatabase(app);
 const googleProvider= new GoogleAuthProvider();
 
-// ── DOM ──
 const $  = id => document.getElementById(id);
 const qs = s  => document.querySelector(s);
 
-// ── PAGE ROUTER ──
 const PAGES = ['home','login','register','welcome'];
 function showPage(id) {
   PAGES.forEach(p => {
@@ -41,34 +36,33 @@ function showPage(id) {
   window.location.hash = id;
 }
 
-// hash-based nav
 window.addEventListener('hashchange', () => {
   const hash = window.location.hash.replace('#','') || 'home';
   if (PAGES.includes(hash)) {
     const user = auth.currentUser;
     if (hash === 'login' && user) { showPage('home'); return; }
-    if (hash === 'register') return; // handled by auth flow
+    if (hash === 'register') return;
     showPage(hash);
   }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.add('js-ready');
   const hash = window.location.hash.replace('#','') || 'home';
   showPage(PAGES.includes(hash) ? hash : 'home');
+  setupScrollAnimations();
   setupCalculator();
   setupFeedback();
   setupAdminConsole();
   loadComments();
 });
 
-// ── GLOBAL STATE ──
 let currentUser     = null;
 let currentUserData = null;
 let selectedRating  = 0;
 let calcResult      = null;
 let animRunning     = false;
 
-// ── FORMAT ──
 function formatRp(n) {
   if (!n || n === 0) return 'Rp 0';
   return 'Rp ' + Math.round(n).toLocaleString('id-ID');
@@ -82,7 +76,6 @@ function timeAgo(ts) {
   return 'baru saja';
 }
 
-// ── CONTENT SANITIZER ──
 const URL_PATTERN = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,})/gi;
 const PHONE_PATTERN = /(\+62|08)[0-9]{8,12}/g;
 const PROMO_WORDS = ['jual','beli','discount','promo','wa di','hubungi','contact','telegram','t\.me','discord\.gg','bit\.ly','tinyurl','shorturl'];
@@ -102,7 +95,6 @@ function sanitizeAndValidate(text) {
   return { ok: true, clean };
 }
 
-// ── AUTH STATE ──
 onAuthStateChanged(auth, async user => {
   currentUser = user;
   if (user) {
@@ -118,32 +110,32 @@ onAuthStateChanged(auth, async user => {
 });
 
 async function handleUserLogin(user) {
-  // Check if username set in DB
+ 
   const snap = await get(ref(db, `users/${user.uid}`));
   const userData = snap.val() || {};
   currentUserData = userData;
 
-  // Check banned
+ 
   if (userData.banned) {
     showBanned(userData);
     return;
   }
 
-  // Username not set? → register page
+ 
   if (!userData.username) {
     showPage('register');
     setupRegisterPage(user);
     return;
   }
 
-  // Logged in fully
+ 
   $('authArea').classList.add('hidden');
   $('userArea').classList.remove('hidden');
   $('navUsername').textContent = userData.username || user.displayName || 'User';
   const initial = (userData.username || user.email || '?')[0].toUpperCase();
   $('userAvatar').textContent = initial;
 
-  // Role badges
+ 
   if (userData.owner) {
     $('navRoleBadge').textContent = 'OWNER';
     $('navRoleBadge').classList.remove('hidden');
@@ -154,13 +146,13 @@ async function handleUserLogin(user) {
     $('adminConsole').classList.remove('hidden');
   }
 
-  // Feedback form
+ 
   $('feedbackGate').classList.add('hidden');
   $('feedbackFormWrap').classList.remove('hidden');
   $('formAvatar').textContent = initial;
   $('formUsername').textContent = userData.username || user.displayName || 'User';
 
-  // Listen for ban changes in realtime
+ 
   onValue(ref(db, `users/${user.uid}/banned`), snap => {
     if (snap.val() === true) {
       get(ref(db, `users/${user.uid}`)).then(s => showBanned(s.val() || {}));
@@ -168,7 +160,6 @@ async function handleUserLogin(user) {
   });
 }
 
-// ── BANNED ──
 function showBanned(userData) {
   $('bannedOverlay').classList.remove('hidden');
   $('bannedReason').textContent = userData.banReason || 'Pelanggaran kebijakan komunitas.';
@@ -183,12 +174,11 @@ function showBanned(userData) {
 export function doLogout() { signOut(auth); }
 $('bannedLogoutBtn').addEventListener('click', () => signOut(auth));
 
-// ── GOOGLE LOGIN ──
 async function doGoogleLogin() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    // Remove Google photo URL for privacy — handled server-side; client: don't store photoURL
-    // Auth state change handles routing
+   
+   
   } catch (err) {
     const errEl = $('loginError');
     if (errEl) {
@@ -216,7 +206,6 @@ function getAuthError(code) {
   return map[code] || 'Terjadi kesalahan. Coba lagi.';
 }
 
-// ── REGISTER PAGE ──
 function setupRegisterPage(user) {
   const initial = (user.displayName || user.email || '?')[0].toUpperCase();
   $('regGoogleAvatar').textContent = initial;
@@ -260,7 +249,7 @@ function setupRegisterPage(user) {
       return;
     }
 
-    // Check uniqueness
+   
     const usernameSnap = await get(ref(db, `usernames/${username.toLowerCase()}`));
     if (usernameSnap.exists()) {
       errEl.textContent = 'Username sudah dipakai. Pilih lain.';
@@ -272,9 +261,9 @@ function setupRegisterPage(user) {
     $('doRegister').textContent = 'Menyimpan...';
 
     try {
-      // Save username reservation
+     
       await set(ref(db, `usernames/${username.toLowerCase()}`), user.uid);
-      // Save user record — no photoURL stored
+     
       await set(ref(db, `users/${user.uid}`), {
         username,
         email:     user.email,
@@ -285,11 +274,11 @@ function setupRegisterPage(user) {
         staff:     false,
         cdfeedback: null
       });
-      // Update auth display name
+     
       await updateProfile(user, { displayName: username, photoURL: null });
       currentUserData = { username, email: user.email, uid: user.uid };
 
-      // Show welcome
+     
       showWelcomePage(username);
     } catch (err) {
       errEl.textContent = 'Gagal menyimpan. Coba lagi.';
@@ -300,7 +289,6 @@ function setupRegisterPage(user) {
   });
 }
 
-// ── WELCOME PAGE ──
 function showWelcomePage(username) {
   showPage('welcome');
   const greeting  = $('welcomeGreeting');
@@ -309,7 +297,7 @@ function showWelcomePage(username) {
   const startBtn  = $('welcomeStartBtn');
   const wsItems   = ['ws1','ws2','ws3','ws4'].map(id => $(id));
 
-  // Typewriter for greeting
+ 
   const fullText = `Welcome, ${username}!! 👋`;
   greeting.textContent = '';
   let i = 0;
@@ -318,7 +306,7 @@ function showWelcomePage(username) {
       greeting.textContent += fullText[i++];
       setTimeout(typeChar, 55);
     } else {
-      // After typing done, show sub + steps
+     
       setTimeout(() => {
         sub.classList.remove('hidden');
         steps.classList.remove('hidden');
@@ -337,7 +325,6 @@ function showWelcomePage(username) {
   };
 }
 
-// ── CALCULATOR ──
 const PRICES = {
   rank: {
     'Warrior':           0,
@@ -425,7 +412,7 @@ function applyResultUI(res) {
     ? `Estimasi pasar: ${formatRp(res.min)} — ${formatRp(res.max)}`
     : '';
 
-  // Breakdown
+ 
   const bd = $('priceBreakdown');
   bd.innerHTML = '';
   const items = [
@@ -443,22 +430,23 @@ function applyResultUI(res) {
     bd.appendChild(el);
   });
 
-  // Mini bars
+ 
   const maxB = Math.max(res.rankVal+res.histVal, res.skinVal, res.emblemVal, res.bonusVal, 1);
   $('barRank').style.width   = Math.min(((res.rankVal+res.histVal)/maxB)*100,100)+'%';
   $('barSkin').style.width   = Math.min((res.skinVal/maxB)*100,100)+'%';
   $('barEmblem').style.width = Math.min((res.emblemVal/maxB)*100,100)+'%';
   $('barBonus').style.width  = Math.min((res.bonusVal/maxB)*100,100)+'%';
 
-  // Share
+ 
   const msg = `Estimasi akun MLBB saya: ${formatRp(res.total)} (Grade: ${res.grade}) — dihitung di ExeRevers Calculator`;
   $('shareWa').href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
 }
 
-// ── RESULT ANIMATION ──
 async function runResultAnimation(res) {
   if (animRunning) { finishAnim(res); return; }
   animRunning = true;
+  document.body.classList.add('is-calculating');
+  $('resultCard')?.classList.add('is-updating');
 
   const overlay = $('resultAnimOverlay');
   const phase1  = $('animPhase1');
@@ -477,11 +465,11 @@ async function runResultAnimation(res) {
   let skipped = false;
   skip.onclick = () => { skipped = true; finishAnim(res); };
 
-  // Phase 1: spinner 1.2s
+ 
   await delay(1200);
   if (skipped) return;
 
-  // Phase 2: checklist items
+ 
   phase1.classList.add('hidden');
   phase2.classList.remove('hidden');
   checklist.innerHTML = '';
@@ -508,13 +496,13 @@ async function runResultAnimation(res) {
   await delay(400);
   if (skipped) return;
 
-  // Phase 3: typewriter price
+ 
   phase2.classList.add('hidden');
   phase3.classList.remove('hidden');
   animGradeEl.textContent = res.grade;
   animGradeEl.style.cssText = res.gradeStyle + ';padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid;';
 
-  // Count-up animation for price
+ 
   const target = res.total;
   const duration = 1200;
   const steps = 40;
@@ -535,21 +523,52 @@ async function runResultAnimation(res) {
 
 function finishAnim(res) {
   animRunning = false;
+  document.body.classList.remove('is-calculating');
+  $('resultCard')?.classList.remove('is-updating');
   $('resultAnimOverlay').classList.add('hidden');
   applyResultUI(res);
 }
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ── SETUP CALCULATOR ──
+function setupScrollAnimations() {
+  const elements = Array.from(document.querySelectorAll('.reveal-on-scroll'));
+  if (!elements.length) return;
+
+  let ticking = false;
+  const reveal = () => {
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    elements.forEach((el) => {
+      if (el.classList.contains('is-visible')) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.top < viewportHeight * 0.9 && rect.bottom > 0) {
+        el.classList.add('is-visible');
+      }
+    });
+  };
+
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      reveal();
+      ticking = false;
+    });
+  };
+
+  reveal();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+}
+
 function setupCalculator() {
-  // Live update (no animation on live)
+ 
   document.querySelectorAll('input, select').forEach(el => {
     el.addEventListener('input',  () => { calcResult = calcCore(); applyResultUI(calcResult); });
     el.addEventListener('change', () => { calcResult = calcCore(); applyResultUI(calcResult); });
   });
 
-  // Win rate bar
+ 
   $('winRate').addEventListener('input', function() {
     const val = Math.min(parseFloat(this.value)||0, 100);
     $('winRateBar').style.width = val+'%';
@@ -559,14 +578,14 @@ function setupCalculator() {
     else note.textContent = 'Win rate standar pasar';
   });
 
-  // Emblem counter
+ 
   $('emblemLevel60').addEventListener('input', function() {
     const val = Math.min(parseInt(this.value)||0, 7);
     $('emblemCount').textContent = val+'/7';
     if (val > 7) this.value = 7;
   });
 
-  // Qty buttons
+ 
   document.querySelectorAll('.qty-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const input  = $(btn.dataset.target);
@@ -578,16 +597,25 @@ function setupCalculator() {
     });
   });
 
-  // CALCULATE button → with animation
+ 
   $('calculateBtn').addEventListener('click', () => {
     calcResult = calcCore();
     runResultAnimation(calcResult);
+    const resultCol = qs('.result-col');
+    const resultCard = $('resultCard');
+
     if (window.innerWidth < 900) {
-      qs('.result-col')?.scrollIntoView({ behavior:'smooth', block:'start' });
+      resultCol?.scrollIntoView({ behavior:'smooth', block:'start' });
+      resultCard?.classList.remove('highlight');
+      void resultCard?.offsetWidth;
+      resultCard?.classList.add('highlight');
+      setTimeout(() => resultCard?.classList.remove('highlight'), 1200);
+    } else {
+      resultCol?.scrollIntoView({ behavior:'smooth', block:'center' });
     }
   });
 
-  // Reset
+ 
   $('resetBtn').addEventListener('click', () => {
     document.querySelectorAll('.section-card input[type="number"]').forEach(el => el.value='0');
     document.querySelectorAll('.tier-input input').forEach(el => el.value='0');
@@ -602,7 +630,7 @@ function setupCalculator() {
     calcResult = calcCore(); applyResultUI(calcResult);
   });
 
-  // Copy
+ 
   $('copyResult').addEventListener('click', () => {
     const r = calcResult || calcCore();
     const text = `Estimasi Akun MLBB — ExeRevers Calculator\nHarga: ${formatRp(r.total)}\nGrade: ${r.grade}\nRange: ${formatRp(r.min)} – ${formatRp(r.max)}`;
@@ -613,9 +641,8 @@ function setupCalculator() {
   });
 }
 
-// ── FEEDBACK ──
 function setupFeedback() {
-  // Char counter
+ 
   $('feedbackText').addEventListener('input', function() {
     const len = this.value.length;
     const counter   = $('charCounter');
@@ -630,7 +657,7 @@ function setupFeedback() {
     else               { counter.className='char-counter';        barFill.className='char-bar-fill'; }
   });
 
-  // Stars
+ 
   const stars = $('starRating').querySelectorAll('span');
   stars.forEach(star => {
     star.addEventListener('mouseover', () => {
@@ -648,7 +675,7 @@ function setupFeedback() {
     stars.forEach((s,i) => s.classList.toggle('active', i < selectedRating));
   });
 
-  // Submit
+ 
   $('submitFeedback').addEventListener('click', submitFeedback);
 }
 
@@ -657,15 +684,15 @@ async function submitFeedback() {
   const text = $('feedbackText').value;
   const uid  = currentUser.uid;
 
-  // Re-check banned
+ 
   const banSnap = await get(ref(db, `users/${uid}/banned`));
   if (banSnap.val()) { showFeedbackMsg('Akunmu dibanned dari mengirim feedback.','error'); return; }
 
-  // Validate content
+ 
   const { ok, clean, errors } = sanitizeAndValidate(text);
   if (!ok) { showFeedbackMsg('⚠ ' + errors.join(' '),'error'); return; }
 
-  // Anti-spam: check 24h cooldown stored in users/uid/cdfeedback
+ 
   const cdSnap = await get(ref(db, `users/${uid}/cdfeedback`));
   const lastSent = cdSnap.val();
   if (lastSent) {
@@ -684,7 +711,7 @@ async function submitFeedback() {
     const username = currentUserData?.username || currentUser.email?.split('@')[0] || 'User';
     const now = Date.now();
 
-    // Save to data/feedback/ with format requested
+   
     await push(ref(db, 'data/feedback'), {
       By:      username,
       Time:    now,
@@ -693,10 +720,10 @@ async function submitFeedback() {
       uid:     uid
     });
 
-    // Update cooldown timestamp in users/uid/cdfeedback
+   
     await update(ref(db, `users/${uid}`), { cdfeedback: now });
 
-    // Reset form
+   
     $('feedbackText').value = '';
     $('charCounter').textContent = '0 / 500';
     $('charBarFill').style.width = '0%';
@@ -721,7 +748,6 @@ function showFeedbackMsg(msg, type) {
   setTimeout(() => el.classList.add('hidden'), 5000);
 }
 
-// ── LOAD COMMENTS ──
 function loadComments() {
   const q = query(ref(db, 'data/feedback'), orderByChild('Time'), limitToLast(25));
   onValue(q, async snapshot => {
@@ -736,7 +762,7 @@ function loadComments() {
     items.reverse();
 
     for (const item of items) {
-      // Check if uid is banned (for badge display)
+     
       let isBanned = false;
       if (item.uid) {
         try {
@@ -776,7 +802,6 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── ADMIN CONSOLE ──
 function setupAdminConsole() {
   $('consoleClose').addEventListener('click', () => $('adminConsole').classList.add('hidden'));
 
@@ -828,7 +853,7 @@ function setupAdminConsole() {
   }
 
   async function cmdBan(parts) {
-    // /ban [uid] [hari] [alasan...]
+   
     if (!currentUser) return;
     if (parts.length < 4) { addLine('Format: /ban [uid] [hari] [alasan]','error'); return; }
     const targetUid = parts[1];
@@ -837,7 +862,7 @@ function setupAdminConsole() {
 
     if (isNaN(days) || days < 1) { addLine('Hari harus angka valid.','error'); return; }
 
-    // Check caller is owner or staff
+   
     const callerSnap = await get(ref(db, `users/${currentUser.uid}`));
     const caller = callerSnap.val();
     if (!caller?.owner && !caller?.staff) { addLine('Akses ditolak.','error'); return; }
