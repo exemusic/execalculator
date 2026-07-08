@@ -744,7 +744,11 @@ async function submitFeedback() {
    
     await update(ref(db, `users/${uid}`), { cdfeedback: now });
 
-   
+    updateFeedbackList();
+    if ($('allCommentsList')) {
+      await loadAllComments();
+    }
+
     $('feedbackText').value = '';
     $('charCounter').textContent = '0 / 500';
     $('charBarFill').style.width = '0%';
