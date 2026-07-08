@@ -853,63 +853,6 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-async function renderComments(listEl, limit = null) {
-  const q = limit ? query(ref(db, 'data/feedback'), orderByChild('Time'), limitToLast(limit)) : query(ref(db, 'data/feedback'), orderByChild('Time'));
-  const snapshot = await get(q);
-  listEl.innerHTML = '';
-  if (!snapshot.exists()) {
-    listEl.innerHTML = '<div class="loading-indicator">Belum ada komentar.</div>';
-    return;
-  }
-  const items = [];
-  snapshot.forEach(child => items.push({ _key: child.key, ...child.val() }));
-  items.reverse();
-  for (const item of items) {
-    let isBanned = false;
-    if (item.uid) {
-      try {
-        const banSnap = await get(ref(db, `users/${item.uid}/banned`));
-        isBanned = banSnap.val() === true;
-      } catch (_) {}
-    }
-    const el = document.createElement('div');
-    el.className = 'comment-item' + (isBanned ? ' banned-comment' : '');
-    const date = timeAgo(item.Time);
-    const initial = (item.By || '?')[0].toUpperCase();
-    const starsStr = item.rating ? '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) : '';
-    el.innerHTML = `
-      <div class="comment-header">
-        <div class="comment-user">
-          <div class="avatar small" style="background:var(--surface-3)">${initial}</div>
-          <div>
-            <div class="comment-name">${escHtml(item.By || 'Anonim')}</div>
-            <div class="comment-time">${date}</div>
-          </div>
-        </div>
-        <div class="comment-meta">
-          ${starsStr ? `<div class="comment-stars">${starsStr}</div>` : ''}
-          ${isBanned ? `<span class="comment-banned-tag">BANNED</span>` : ''}
-        </div>
-      </div>
-      <div class="comment-text">${escHtml(item.Text || '')}</div>
-    `;
-    if (currentUserData?.owner || currentUserData?.staff) {
-      const adminActions = document.createElement('div');
-      adminActions.className = 'comment-admin-actions';
-      adminActions.innerHTML = `
-        <button class="btn-ghost tiny" data-action="delete" data-comment="${item._key}">Hapus</button>
-      `;
-      adminActions.querySelector('[data-action="delete"]').addEventListener('click', async () => {
-        if (!confirm('Hapus komentar ini?')) return;
-        await remove(ref(db, `data/feedback/${item._key}`));
-        await renderComments(listEl, limit);
-      });
-      el.appendChild(adminActions);
-    }
-    listEl.appendChild(el);
-  }
-}
-
 function setupAnnouncement() {
   const banner = $('announcementBanner');
   const textEl = $('announcementText');
