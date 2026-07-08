@@ -828,11 +828,19 @@ async function renderComments(listEl, limit = null) {
         <button class="btn-ghost tiny" data-action="reply" data-comment="${item._key}">Balas</button>
       `;
       adminActions.querySelector('[data-action="delete"]').addEventListener('click', async () => {
+        if (!currentUserData?.owner && !currentUserData?.staff) {
+          alert('Akses ditolak.');
+          return;
+        }
         if (!confirm('Hapus komentar ini?')) return;
         await remove(ref(db, `data/feedback/${item._key}`));
         await renderComments(listEl, limit);
       });
       adminActions.querySelector('[data-action="reply"]').addEventListener('click', async () => {
+        if (!currentUserData?.owner && !currentUserData?.staff) {
+          alert('Akses ditolak.');
+          return;
+        }
         const reply = prompt('Masukkan balasan admin untuk komentar ini:');
         if (!reply) return;
         await update(ref(db, `data/feedback/${item._key}`), {
