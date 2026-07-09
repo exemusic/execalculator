@@ -827,15 +827,19 @@ async function renderComments(listEl, limit = null) {
     const el = document.createElement('div');
     el.className = 'comment-item' + (isBanned ? ' banned-comment' : '');
     const date = timeAgo(item.Time);
-    const initial = (item.By || '?')[0].toUpperCase();
+    const displayName = isBanned ? 'Banned' : (item.By || 'Anonim');
+    const initial = isBanned ? 'B' : ((item.By || '?')[0] || '?').toUpperCase();
     const starsStr = item.rating ? '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) : '';
+
+    // mark whether this comment should be counted in aggregates
+    el.dataset.counted = isBanned ? 'false' : 'true';
 
     el.innerHTML = `
       <div class="comment-header">
         <div class="comment-user">
-          <div class="avatar small" style="background:var(--surface-3)">${initial}</div>
+          <div class="avatar small ${isBanned ? 'banned-avatar' : ''}" style="background:var(--surface-3)">${initial}</div>
           <div>
-            <div class="comment-name">${escHtml(item.By || 'Anonim')}</div>
+            <div class="comment-name ${isBanned ? 'banned' : ''}">${escHtml(displayName)}</div>
             <div class="comment-time">${date}</div>
           </div>
         </div>
@@ -889,6 +893,21 @@ async function renderComments(listEl, limit = null) {
 
     listEl.appendChild(el);
   }
+
+  // Update visible comment count (exclude banned / uncounted comments)
+  try {
+    const countableEls = Array.from(listEl.querySelectorAll('.comment-item')).filter(e => e.dataset.counted !== 'false');
+    const count = countableEls.length;
+    const section = listEl.closest('.comments-section');
+    if (section) {
+      const titleEl = section.querySelector('.comments-title');
+      if (titleEl) {
+        const base = titleEl.dataset.base || titleEl.textContent.replace(/\s*\(.+\)$/, '').trim();
+        titleEl.dataset.base = base;
+        titleEl.textContent = `${base} (${count})`;
+      }
+    }
+  } catch (err) { /* ignore if DOM structure unexpected */ }
 }
 
 function escHtml(s) {

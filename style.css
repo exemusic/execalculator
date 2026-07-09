@@ -849,6 +849,17 @@ textarea::placeholder { color: var(--text-3); }
   background: var(--error-bg); color: var(--error); border: 1px solid var(--error-bdr);
 }
 
+/* Banned username / avatar styles */
+.comment-name.banned {
+  color: linear-gradient(90deg, var(--warn), var(--error));
+  color: var(--error);
+}
+.avatar.small.banned-avatar {
+  background: linear-gradient(90deg, rgba(251,191,36,0.14), rgba(248,113,113,0.14));
+  border: 1px solid rgba(248,113,113,0.18);
+  color: var(--text-1);
+}
+
 .loading-indicator { text-align: center; padding: 32px; color: var(--text-3); font-size: 13px; }
 
 
