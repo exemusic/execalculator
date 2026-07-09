@@ -817,11 +817,28 @@ async function renderComments(listEl, limit = null) {
 
   for (const item of items) {
     let isBanned = false;
-    if (item.uid) {
-      try {
-        const banSnap = await get(ref(db, `users/${item.uid}/banned`));
-        isBanned = banSnap.val() === true;
-      } catch (_) {}
+    try {
+      if (item.uid) {
+        // preferred: check the user's banned flag
+        const userSnap = await get(ref(db, `users/${item.uid}`));
+        const u = userSnap.val() || {};
+        isBanned = u.banned === true || (!!u.banUntil && Number(u.banUntil) > Date.now());
+      } else if (item.By) {
+        // fallback for older comments that only stored a username string:
+        // try to resolve username -> uid then check user record
+        const unameKey = String(item.By).toLowerCase();
+        const mapSnap = await get(ref(db, `usernames/${unameKey}`));
+        if (mapSnap.exists()) {
+          const mappedUid = mapSnap.val();
+          const userSnap = await get(ref(db, `users/${mappedUid}`));
+          const u = userSnap.val() || {};
+          isBanned = u.banned === true || (!!u.banUntil && Number(u.banUntil) > Date.now());
+        }
+      }
+    } catch (err) {
+      // if any DB lookup fails, default to not banned so UI stays available
+      console.warn('Failed to evaluate ban status for comment', item._key, err);
+      isBanned = false;
     }
 
     const el = document.createElement('div');
