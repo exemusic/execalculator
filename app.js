@@ -776,45 +776,32 @@ function showFeedbackMsg(msg, type) {
 async function renderComments(listEl, limit = null) {
   const pathsToTry = [
     { path: 'data/feedback', childFn: snap => snap },
-    { path: 'feedback', childFn: snap => snap },
-    { path: 'data', childFn: snap => snap.child('feedback') }
+    { path: 'feedback', childFn: snap => snap }
   ];
 
   listEl.innerHTML = '';
   const itemMap = new Map();
 
   for (const source of pathsToTry) {
-    const snapshot = await get(ref(db, source.path));
-    if (!snapshot.exists()) continue;
-    const feedbackSnap = source.childFn(snapshot);
-    if (!feedbackSnap.exists()) continue;
-    feedbackSnap.forEach(child => {
-      const key = child.key;
-      if (!key) return;
-      if (!itemMap.has(key)) {
-        itemMap.set(key, { _key: key, ...child.val() });
-      }
-    });
+    try {
+      const snapshot = await get(ref(db, source.path));
+      if (!snapshot.exists()) continue;
+      const feedbackSnap = source.childFn(snapshot);
+      if (!feedbackSnap.exists()) continue;
+      feedbackSnap.forEach(child => {
+        const key = child.key;
+        if (!key) return;
+        if (!itemMap.has(key)) {
+          itemMap.set(key, { _key: key, ...child.val() });
+        }
+      });
+    } catch (err) {
+      console.warn('Could not read comment path', source.path, err);
+      continue;
+    }
   }
 
-  let items = Array.from(itemMap.values());
-  try {
-    const response = await fetch(new URL('data.json', window.location.href).href);
-    if (response.ok) {
-      const json = await response.json();
-      const localFeedback = json?.data?.feedback || json?.feedback || null;
-      if (localFeedback && typeof localFeedback === 'object') {
-        Object.entries(localFeedback).forEach(([key, value]) => {
-          if (!itemMap.has(key) && value && typeof value === 'object') {
-            itemMap.set(key, { _key: key, ...value });
-          }
-        });
-        items = Array.from(itemMap.values());
-      }
-    }
-  } catch (_) {
-    // ignore local file read errors
-  }
+  const items = Array.from(itemMap.values());
 
   if (!items.length) {
     listEl.innerHTML = '<div class="loading-indicator">Belum ada komentar.</div>';
