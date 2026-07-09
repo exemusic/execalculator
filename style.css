@@ -50,20 +50,10 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 84px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background-color: #0b0d12;
-  -webkit-text-size-adjust: 100%;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable both-edges;
-}
+html { scroll-behavior: smooth; }
 
 body {
   font-family: 'DM Sans', sans-serif;
-  background-color: #0b0d12;
   background:
     radial-gradient(circle at top left, rgba(141,168,255,0.20), transparent 24%),
     radial-gradient(circle at bottom right, rgba(74,222,128,0.12), transparent 28%),
@@ -77,8 +67,6 @@ body {
   transition: background 0.4s ease;
   position: relative;
   overflow-x: hidden;
-  overscroll-behavior-y: none;
-  will-change: scroll-position;
 }
 
 body::before {
@@ -93,31 +81,9 @@ body::before {
     radial-gradient(circle at 50% 70%, rgba(255,255,255,0.06), transparent 22%);
   opacity: 0.95;
   animation: ambientDrift 22s ease-in-out infinite alternate;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: transform, opacity;
 }
 
 .hero { animation: screenFlow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.reveal-on-scroll,
-.topnav,
-.card,
-.result-card,
-.announcement-card,
-.hero-visual,
-.guide-strip {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-.reveal-on-scroll {
-  will-change: transform, opacity;
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.16) transparent;
-}
 
 ::selection { background: rgba(240,237,232,0.2); color: var(--text-1); }
 
